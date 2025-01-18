@@ -11,7 +11,7 @@
       "name": "Christian Basile"
     },
     {
-      "name":"Jayson Smigen"
+      "name": "Jayson Smigen"
     }
   ],
   "scripts": {
@@ -25,21 +25,24 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.20.0",
     "@clerk/nextjs": "^6.9.2",
+    "@next/eslint-plugin-next": "~15.1.0",
     "convex": "^1.17.0",
+    "eslint-plugin-react-hooks": "^5.1.0-beta-26f2496093-20240514",
     "next": "15.1.0",
     "react": "^19",
-    "react-dom": "^19",
-    "eslint-plugin-react-hooks": "^5.1.0-beta-26f2496093-20240514",
-    "@next/eslint-plugin-next": "~15.1.0"
+    "react-dom": "^19"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^18.3.17",
     "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "15.1.0",
-    "typescript": "^5.1.3",
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.1.3"
   }
 }
