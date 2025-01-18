@@ -1,7 +1,19 @@
 {
-  "name": "nextjs-clerk-shadcn",
+  "name": "retro-chat",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "Christian Basile",
+    "email": "basile.christian94@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Christian Basile"
+    },
+    {
+      "name":"Jayson Smigen"
+    }
+  ],
   "scripts": {
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "next dev",
