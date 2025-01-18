@@ -1,0 +1,27 @@
+.cursor {
+  position: relative;
+}
+.cursor input {
+  caret-color: rgba(0, 0, 0, 0);
+}
+.cursor input:focus + i {
+  position: absolute;
+  width: 12px;
+  height: 80%;
+  background-color: gray;
+  left: 0px;
+  top: 10%;
+  animation-name: blink;
+  animation-duration: 1000ms;
+  animation-iteration-count: infinite;
+  opacity: 1;
+}
+
+@keyframes blink {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

@@ -1,19 +1,20 @@
 "use client";
 
+import { ChatCard } from "@/components/ChatCard";
+import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import {
   Authenticated,
   Unauthenticated,
   useMutation,
   useQuery,
 } from "convex/react";
-import { api } from "../convex/_generated/api";
-import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { api } from "../convex/_generated/api";
 
 export default function Home() {
   return (
     <>
-      <header className='text-3xl font-bold'>
+      <header className="text-3xl font-bold">
         Convex + Next.js + Clerk
         <SignInAndSignUpButtons />
       </header>
@@ -62,6 +63,7 @@ function SignedInContent() {
   return (
     <>
       <p>Welcome {viewer ?? "N/A"}!</p>
+      <ChatCard />
       <p>
         Click the button below and open this page in another window - this data
         is persisted in the Convex cloud database!

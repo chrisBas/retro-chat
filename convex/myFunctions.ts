@@ -22,6 +22,7 @@ export const listNumbers = query({
       .order("desc")
       .take(args.count);
     return {
+      email: (await ctx.auth.getUserIdentity())?.email ?? null,
       viewer: (await ctx.auth.getUserIdentity())?.name ?? null,
       numbers: numbers.toReversed().map((number) => number.value),
     };
