@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatCard } from "@/components/ChatCard";
+import { Terminal } from "@/components/Terminal";
 import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import {
   Authenticated,
@@ -63,7 +63,7 @@ function SignedInContent() {
   return (
     <>
       <p>Welcome {viewer ?? "N/A"}!</p>
-      <ChatCard />
+      <Terminal />
       <p>
         Click the button below and open this page in another window - this data
         is persisted in the Convex cloud database!

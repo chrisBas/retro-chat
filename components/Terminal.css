@@ -1,15 +1,11 @@
-.cursor {
+.editor {
   position: relative;
 }
-.cursor input {
-  caret-color: rgba(0, 0, 0, 0);
-}
-.cursor input:focus + i {
+.editor.focus .caret {
   position: absolute;
   width: 12px;
   height: 80%;
   background-color: gray;
-  left: 0px;
   top: 10%;
   animation-name: blink;
   animation-duration: 1000ms;
