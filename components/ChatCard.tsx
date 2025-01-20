@@ -14,6 +14,7 @@ export function ChatCard() {
   const createChat = useMutation(api.myFunctions.createChat);
   const deleteChat = useMutation(api.myFunctions.deleteChat);
   const addMemberToChat = useMutation(api.myFunctions.addMemberToChat);
+  const addMessageToChat = useMutation(api.myFunctions.addMessageToChat);
   const { chats, email } = useQuery(api.myFunctions.listChats) ?? {
     chats: [],
     email: null,
@@ -100,16 +101,19 @@ export function ChatCard() {
           return undefined;
         } else {
           // in a chat
-          const messages: string[] = chat?.messages || [];
+          const messages: { sender: string; msg: string }[] =
+            chat?.messages || [];
           if (messages.length === 0) {
             return undefined;
           }
           return (
             <span>
-              {messages.map((message, i) => {
+              {messages.map(({ sender, msg }, i) => {
                 return (
                   <span key={i}>
-                    <span>{message}</span>
+                    <span className="special-text">{sender}</span>
+                    <span className="default-text">: </span>
+                    <span>{msg}</span>
                     {i < messages.length - 1 && <br />}
                   </span>
                 );
@@ -117,6 +121,31 @@ export function ChatCard() {
             </span>
           );
         }
+      },
+    },
+    {
+      command: "msg <MESSAGE>",
+      description: "Sends a message to the current chat",
+      fn: async (message: string) => {
+        if (path === "/") {
+          return undefined;
+        } else {
+          if (chat) {
+            // in chat
+            return addMessageToChat({ name: path, message })
+              .then(() => {
+                return undefined;
+              })
+              .catch((e) => {
+                console.error(e);
+                return (
+                  <span>{`msg <MESSAGE>: failed to add message "${message}" to chat ${path}`}</span>
+                );
+              });
+          }
+          // TODO: handle error
+        }
+        return undefined;
       },
     },
     {

@@ -92,6 +92,32 @@ export const addMemberToChat = mutation({
   },
 });
 
+export const addMessageToChat = mutation({
+  args: {
+    name: v.string(),
+    message: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const createdBy = (await ctx.auth.getUserIdentity())?.email;
+    if (!createdBy) {
+      throw new ConvexError("Unauthorized");
+    }
+    const chatsWithSameName = await ctx.db
+      .query("chats")
+      .filter((q) => q.eq(q.field("name"), args.name))
+      .collect();
+    if (chatsWithSameName.length == 0) {
+      throw new ConvexError("Chat does not exist");
+    }
+    ctx.db.patch(chatsWithSameName[0]._id, {
+      messages: [
+        ...chatsWithSameName[0].messages,
+        { sender: createdBy, msg: args.message },
+      ],
+    });
+  },
+});
+
 export const createChat = mutation({
   args: {
     name: v.string(),
