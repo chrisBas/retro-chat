@@ -17,6 +17,16 @@
   opacity: 1;
 }
 
+.default-text {
+  color: #CCCCCC;
+}
+.special-text {
+  color: #3B729D;
+}
+.colored-text {
+  color: #23D16F;
+}
+
 @keyframes blink {
   from {
     opacity: 1;

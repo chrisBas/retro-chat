@@ -1,5 +1,5 @@
 import { api } from "@/convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { ReactElement, useState } from "react";
 import { ReactTerminal, TerminalContextProvider } from "react-terminal";
 import "./ChatCard.css";
@@ -8,22 +8,31 @@ import "./ChatCard.css";
  * See Docs for React Terminal: https://www.npmjs.com/package/react-terminal
  */
 export function ChatCard() {
-  // TODO: change this to chat feed, just used here for now to get email for ChatInput
-  const { email } =
-    useQuery(api.myFunctions.listNumbers, {
-      count: 10,
-    }) ?? {};
   const [path, setPath] = useState("/");
-  const [chats, setChats] = useState<string[]>([]);
+
+  // global hooks
+  const createChat = useMutation(api.myFunctions.createChat);
+  const deleteChat = useMutation(api.myFunctions.deleteChat);
+  const addMemberToChat = useMutation(api.myFunctions.addMemberToChat);
+  const { chats, email } = useQuery(api.myFunctions.listChats) ?? {
+    chats: [],
+    email: null,
+  };
+  const chat = useQuery(
+    api.myFunctions.getChat,
+    path === "/" ? "skip" : { name: path }
+  );
+
+  // local vars
   const commands: {
     command: string;
-    fn: (...args: string[]) => ReactElement | undefined;
+    fn: (...args: string[]) => Promise<ReactElement | undefined>;
     description: string;
   }[] = [
     {
       command: "help",
       description: "",
-      fn: () => {
+      fn: async () => {
         return (
           <span>
             {commands
@@ -45,13 +54,13 @@ export function ChatCard() {
       command: "pwd",
       description:
         "Prints the current working directory (which is the current chat)",
-      fn: () => <span>{path}</span>,
+      fn: async () => <span>{path}</span>,
     },
     {
       command: "cd <DIR>",
       description:
         "Changes the current working directory to <DIR> (which is a chat)",
-      fn: (dir: string) => {
+      fn: async (dir: string) => {
         if (dir === ".." || dir === "/") {
           if (path !== "/") {
             setPath("/");
@@ -71,45 +80,100 @@ export function ChatCard() {
       command: "ls",
       description:
         "Lists the contents of the current directory (which is a list of chats)",
-      fn: () => {
+      fn: async () => {
         if (path === "/") {
           if (chats.length === 0) {
             return undefined;
           }
-          return <span>{chats.join(" ")}</span>;
+          return <span className="special-text">{chats.join(" ")}</span>;
         } else {
           // in a chat
-          // TODO: return a list of people in the chat
-          return undefined;
+          return <span>{chat.members.join(" ")}</span>;
         }
       },
     },
     {
-      command: "mkdir <DIR>",
-      description: "Creates a new chat with the name <DIR>",
-      fn: (dir: string) => {
-        if (!chats.includes(dir)) {
-          setChats((old) => [...old, dir]);
+      command: "history",
+      description: "Lists the history of the current chat",
+      fn: async () => {
+        if (path === "/") {
+          return undefined;
         } else {
+          // in a chat
+          const messages: string[] = chat?.messages || [];
+          if (messages.length === 0) {
+            return undefined;
+          }
           return (
-            <span>{`mkdir: cannot create directory "${dir}": Chat exists`}</span>
+            <span>
+              {messages.map((message, i) => {
+                return (
+                  <span key={i}>
+                    <span>{message}</span>
+                    {i < messages.length - 1 && <br />}
+                  </span>
+                );
+              })}
+            </span>
           );
+        }
+      },
+    },
+    {
+      command: "touch <FILE>",
+      description: "Adds a member to the current chat",
+      fn: async (file: string) => {
+        if (path === "/") {
+          return undefined;
+        } else {
+          if (chat) {
+            // in chat
+            return addMemberToChat({ name: path, member: file })
+              .then(() => {
+                return undefined;
+              })
+              .catch((e) => {
+                console.error(e);
+                return (
+                  <span>{`touch <FILE>: failed to add member "${file}" to chat ${path}`}</span>
+                );
+              });
+          }
+          // TODO: handle error
         }
         return undefined;
       },
     },
     {
+      command: "mkdir <DIR>",
+      description: "Creates a new chat with the name <DIR>",
+      fn: async (dir: string) => {
+        return createChat({ name: dir })
+          .then(() => {
+            return undefined;
+          })
+          .catch((e) => {
+            console.error(e);
+            return (
+              <span>{`mkdir: cannot create directory "${dir}": Chat exists`}</span>
+            );
+          });
+      },
+    },
+    {
       command: "rmdir <DIR>",
       description: "Removes the chat <DIR>",
-      fn: (dir: string) => {
-        if (chats.includes(dir)) {
-          setChats((old) => old.filter((chat) => chat !== dir));
-          return undefined;
-        } else {
-          return (
-            <span>{`rmdir: failed to remove "${dir}": No such chat`}</span>
-          );
-        }
+      fn: async (dir: string) => {
+        return deleteChat({ name: dir })
+          .then(() => {
+            return undefined;
+          })
+          .catch((e) => {
+            console.error(e);
+            return (
+              <span>{`rmdir: failed to remove "${dir}": No such chat`}</span>
+            );
+          });
       },
     },
   ];
@@ -117,6 +181,7 @@ export function ChatCard() {
   return (
     <TerminalContextProvider>
       <ReactTerminal
+        theme="dark"
         welcomeMessage={
           <span>
             <span>{"Welcome to Retro Chat!"}</span>
@@ -130,7 +195,7 @@ export function ChatCard() {
           (
             acc: Record<
               string,
-              (...args: string[]) => ReactElement | undefined
+              (...args: string[]) => Promise<ReactElement | undefined>
             >,
             { command, fn }
           ) => {
@@ -145,10 +210,10 @@ export function ChatCard() {
         )}
         prompt={
           <span>
-            <span>{email}</span>
-            <span>:</span>
-            <span>{path}</span>
-            <span>$</span>
+            <span className="colored-text">{email}</span>
+            <span className="default-text">:</span>
+            <span className="special-text">{path}</span>
+            <span className="default-text">$</span>
           </span>
         }
       />
