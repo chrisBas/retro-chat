@@ -1,14 +1,33 @@
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { ReactElement, useState } from "react";
-import { ReactTerminal, TerminalContextProvider } from "react-terminal";
+import { ReactElement, useContext, useEffect, useRef, useState } from "react";
+import {
+  ReactTerminal,
+  TerminalContext,
+  TerminalContextProvider,
+} from "react-terminal";
 import "./ChatCard.css";
 
 /**
  * See Docs for React Terminal: https://www.npmjs.com/package/react-terminal
  */
 export function ChatCard() {
+  return (
+    <TerminalContextProvider>
+      <Terminal />
+    </TerminalContextProvider>
+  );
+}
+
+const Terminal = () => {
+  // ref
+  const msgRef = useRef<{
+    name: string;
+    messages: { msg: string; sender: string }[];
+  } | null>(null);
+
   const [path, setPath] = useState("/");
+  const terminalContext = useContext(TerminalContext);
 
   // global hooks
   const createChat = useMutation(api.myFunctions.createChat);
@@ -207,45 +226,77 @@ export function ChatCard() {
     },
   ];
 
+  useEffect(() => {
+    if (chat !== undefined) {
+      if (msgRef.current === null) {
+        // initialize msgRef
+      } else if (msgRef.current.name !== chat.name) {
+        // chat changed
+      } else if (msgRef.current.messages.length != chat.messages.length) {
+        // new message
+        let idx = msgRef.current!.messages.length;
+        while (idx < chat.messages.length) {
+          const { sender, msg } = chat.messages[idx];
+          terminalContext.setBufferedContent((prev) => {
+            return (
+              <>
+                {prev}
+                <span>
+                  <span className="special-text">{sender}</span>
+                  <span className="default-text">: </span>
+                  <span>{msg}</span>
+                  <br />
+                </span>
+              </>
+            );
+          });
+          idx++;
+        }
+      }
+      msgRef.current = chat as {
+        name: string;
+        messages: { msg: string; sender: string }[];
+      };
+    }
+  }, [chat, terminalContext]);
+
   return (
-    <TerminalContextProvider>
-      <ReactTerminal
-        theme="dark"
-        welcomeMessage={
-          <span>
-            <span>{"Welcome to Retro Chat!"}</span>
-            <br />
-            <span>{"Type 'help' to see available commands."}</span>
-            <br />
-            <br />
-          </span>
-        }
-        commands={commands.reduce(
-          (
-            acc: Record<
-              string,
-              (...args: string[]) => Promise<ReactElement | undefined>
-            >,
-            { command, fn }
-          ) => {
-            // remove any params in the command (like 'cd <DIR>' changes to 'cd')
-            const formattedCommand = command
-              .replaceAll(new RegExp("<.*>", "g"), "")
-              .replaceAll(new RegExp("\\s+$", "g"), "");
-            acc[formattedCommand] = fn;
-            return acc;
-          },
-          {}
-        )}
-        prompt={
-          <span>
-            <span className="colored-text">{email}</span>
-            <span className="default-text">:</span>
-            <span className="special-text">{path}</span>
-            <span className="default-text">$</span>
-          </span>
-        }
-      />
-    </TerminalContextProvider>
+    <ReactTerminal
+      theme="dark"
+      welcomeMessage={
+        <span>
+          <span>{"Welcome to Retro Chat!"}</span>
+          <br />
+          <span>{"Type 'help' to see available commands."}</span>
+          <br />
+          <br />
+        </span>
+      }
+      commands={commands.reduce(
+        (
+          acc: Record<
+            string,
+            (...args: string[]) => Promise<ReactElement | undefined>
+          >,
+          { command, fn }
+        ) => {
+          // remove any params in the command (like 'cd <DIR>' changes to 'cd')
+          const formattedCommand = command
+            .replaceAll(new RegExp("<.*>", "g"), "")
+            .replaceAll(new RegExp("\\s+$", "g"), "");
+          acc[formattedCommand] = fn;
+          return acc;
+        },
+        {}
+      )}
+      prompt={
+        <span>
+          <span className="colored-text">{email}</span>
+          <span className="default-text">:</span>
+          <span className="special-text">{path}</span>
+          <span className="default-text">$</span>
+        </span>
+      }
+    />
   );
-}
+};
