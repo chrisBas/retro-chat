@@ -6,12 +6,12 @@ import {
   TerminalContext,
   TerminalContextProvider,
 } from "react-terminal";
-import "./ChatCard.css";
+import "./RetroChatTerminal.css";
 
 /**
  * See Docs for React Terminal: https://www.npmjs.com/package/react-terminal
  */
-export function ChatCard() {
+export function RetroChatTerminal() {
   return (
     <TerminalContextProvider>
       <Terminal />

@@ -1,27 +1,20 @@
 "use client";
 
-import { ChatCard } from "@/components/ChatCard";
+import { RetroChatTerminal } from "@/components/RetroChatTerminal";
 import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
-import {
-  Authenticated,
-  Unauthenticated,
-  useMutation,
-  useQuery,
-} from "convex/react";
-import Link from "next/link";
-import { api } from "../convex/_generated/api";
+import { Authenticated, Unauthenticated } from "convex/react";
 
 export default function Home() {
   return (
     <>
       <header className="text-3xl font-bold">
-        Convex + Next.js + Clerk
+        Retro-Chat
         <SignInAndSignUpButtons />
       </header>
       <main>
-        <h1>Convex + Next.js + Clerk Auth</h1>
+        <h1>Retro-Chat</h1>
         <Authenticated>
-          <SignedInContent />
+          <RetroChatTerminal />
         </Authenticated>
         <Unauthenticated>
           <p>Click one of the buttons in the top right corner to sign in.</p>
@@ -46,59 +39,5 @@ function SignInAndSignUpButtons() {
         </SignUpButton>
       </Unauthenticated>
     </div>
-  );
-}
-
-function SignedInContent() {
-  const { viewer, numbers } =
-    useQuery(api.myFunctions.listNumbers, {
-      count: 10,
-    }) ?? {};
-  const addNumber = useMutation(api.myFunctions.addNumber);
-
-  if (viewer === undefined || numbers === undefined) {
-    return "loading... (consider a loading skeleton)";
-  }
-
-  return (
-    <>
-      <p>Welcome {viewer ?? "N/A"}!</p>
-      <ChatCard />
-      <p>
-        Click the button below and open this page in another window - this data
-        is persisted in the Convex cloud database!
-      </p>
-      <p>
-        <button
-          onClick={() => {
-            void addNumber({ value: Math.floor(Math.random() * 10) });
-          }}
-        >
-          Add a random number
-        </button>
-      </p>
-      <p>
-        Numbers:{" "}
-        {numbers?.length === 0
-          ? "Click the button!"
-          : numbers?.join(", ") ?? "..."}
-      </p>
-      <p>
-        Edit <code>convex/myFunctions.ts</code> to change your backend
-      </p>
-      <p>
-        Edit <code>app/page.tsx</code> to change your frontend
-      </p>
-      <p>
-        See <Link href="/server">the /server route</Link> for an example of
-        loading data in a server component
-      </p>
-      <p>
-        Check out{" "}
-        <a target="_blank" href="https://docs.convex.dev/home">
-          Convex docs
-        </a>
-      </p>
-    </>
   );
 }
